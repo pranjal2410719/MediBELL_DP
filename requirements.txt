@@ -1,0 +1,6 @@
+pandas
+numpy
+scikit-learn
+joblib
+pyyaml
+matplotlib==3.9.2

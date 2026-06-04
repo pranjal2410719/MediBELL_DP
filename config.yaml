@@ -1,0 +1,16 @@
+# config.yaml
+
+privacy:
+  epsilon: 1.0
+  mechanism: randomized_response
+
+training:
+  test_size: 0.2
+  random_state: 42
+  n_estimators: 200
+
+paths:
+  data: data/synthetic_dataset_25k_40symptoms.csv
+  model: models/disease_model.pkl
+  label_encoder: models/label_encoder.pkl
+  feature_columns: models/feature_columns.pkl
