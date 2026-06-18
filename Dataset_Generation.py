@@ -17,7 +17,7 @@ DISEASES = [
     "Tuberculosis"
 ]
 
-N_SAMPLES = 5000  # total rows
+N_SAMPLES = 250000  # 2.5 Lakhs (25L model)
 
 
 def generate_sample(disease):
