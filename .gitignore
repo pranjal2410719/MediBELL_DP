@@ -1,4 +1,3 @@
-@"
 # Python
 __pycache__/
 *.py[cod]
@@ -6,17 +5,24 @@ __pycache__/
 .venv/
 venv/
 .env
+
 # Models & Data (large binary files)
 models/
 models2/
 data/
+
 # Artifacts & Planning docs (not for git)
 implementation_plan.md
 walkthrough.md
 task.md
+
 # Old federated (replaced by fl/)
 federated/
+
 # IDE
 .vscode/
 .idea/
-"@ | Set-Content .gitignore
+
+# Local blockchain artifacts
+blockchain/deployed_address.txt
+blockchain/audit_trail.json

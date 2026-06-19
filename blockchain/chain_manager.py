@@ -3,11 +3,11 @@ import os
 import json
 import time
 import hashlib
-from blockchain.config import SIMULATION_MODE, PROVIDER_URL, CONTRACT_ADDRESS, PRIVATE_KEY, AUDIT_TRAIL_PATH
+from blockchain.config import BLOCKCHAIN_SIMULATION_MODE, PROVIDER_URL, CONTRACT_ADDRESS, PRIVATE_KEY, AUDIT_TRAIL_PATH
 
 class ChainManager:
     def __init__(self):
-        self.simulation_mode = SIMULATION_MODE
+        self.simulation_mode = BLOCKCHAIN_SIMULATION_MODE
         
     def register_round(self, round_num, accuracy, cid):
         """
@@ -70,29 +70,39 @@ class ChainManager:
                 
             contract = w3.eth.contract(address=CONTRACT_ADDRESS, abi=contract_abi)
             
-            # Get account from private key
-            account = w3.eth.account.from_key(PRIVATE_KEY)
-            
             # Multiply accuracy by 100 to avoid floating point issues on-chain (e.g. 94.27% -> 9427)
             accuracy_integer = int(round(accuracy * 100))
-            
-            # Build transaction
-            nonce = w3.eth.get_transaction_count(account.address)
-            tx = contract.functions.registerRound(
-                round_num,
-                cid,
-                accuracy_integer
-            ).build_transaction({
-                'from': account.address,
-                'nonce': nonce,
-                'gas': 200000,
-                'gasPrice': w3.eth.gas_price
-            })
-            
-            # Sign and send transaction
-            signed_tx = w3.eth.account.sign_transaction(tx, private_key=PRIVATE_KEY)
-            tx_hash_bytes = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
-            tx_hash = w3.to_hex(tx_hash_bytes)
+
+            # Get account from private key or fallback to local unlocked account for Ganache
+            if PRIVATE_KEY.startswith("0x0000") or not PRIVATE_KEY:
+                # Use unlocked account on Ganache directly (no signature required)
+                deployer_account = w3.eth.accounts[0]
+                print(f"[CHAIN] Using local unlocked account {deployer_account} on Ganache.")
+                tx_hash_bytes = contract.functions.registerRound(
+                    round_num,
+                    cid,
+                    accuracy_integer
+                ).transact({'from': deployer_account})
+                tx_hash = w3.to_hex(tx_hash_bytes)
+            else:
+                account = w3.eth.account.from_key(PRIVATE_KEY)
+                # Build transaction
+                nonce = w3.eth.get_transaction_count(account.address)
+                tx = contract.functions.registerRound(
+                    round_num,
+                    cid,
+                    accuracy_integer
+                ).build_transaction({
+                    'from': account.address,
+                    'nonce': nonce,
+                    'gas': 200000,
+                    'gasPrice': w3.eth.gas_price
+                })
+                
+                # Sign and send transaction
+                signed_tx = w3.eth.account.sign_transaction(tx, private_key=PRIVATE_KEY)
+                tx_hash_bytes = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
+                tx_hash = w3.to_hex(tx_hash_bytes)
             
             print(f"[CHAIN] Transaction sent. Tx Hash: {tx_hash}")
             return tx_hash

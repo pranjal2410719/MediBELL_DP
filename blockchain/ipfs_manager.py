@@ -2,11 +2,11 @@
 import os
 import hashlib
 import requests
-from blockchain.config import SIMULATION_MODE, PINATA_API_KEY, PINATA_SECRET_API_KEY
+from blockchain.config import IPFS_SIMULATION_MODE, PINATA_API_KEY, PINATA_SECRET_API_KEY
 
 class IPFSManager:
     def __init__(self):
-        self.simulation_mode = SIMULATION_MODE
+        self.simulation_mode = IPFS_SIMULATION_MODE
         
     def upload_model(self, file_path):
         """
