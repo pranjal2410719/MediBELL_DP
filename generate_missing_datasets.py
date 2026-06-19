@@ -187,4 +187,13 @@ joblib.dump(le, "models/label_encoder.pkl")
 joblib.dump(SYMPTOMS, "models/feature_columns.pkl")
 print("Saved models/disease_model.pkl, label_encoder.pkl, and feature_columns.pkl")
 
+# -------------------------------------------------
+# 5. TRAIN & SAVE FEDERATED MODEL FOR APP.PY PREDICT
+# -------------------------------------------------
+print("Training federated model2 on survey dataset...")
+from train_model2_dp import train_model2
+model2, _ = train_model2("data/MODEL_2_MediBELL.csv", epsilon=10.0)
+joblib.dump(model2, "models/federated_model.pkl")
+print("Saved models/federated_model.pkl")
+
 print("All missing datasets and models have been successfully generated and configured.")

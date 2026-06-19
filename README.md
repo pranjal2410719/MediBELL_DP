@@ -94,7 +94,70 @@ Run localized DP evaluation and export tradeoff plots to `visualizations/`:
 
 ---
 
+## ⛓ Blockchain & IPFS Audit Trail
+
+MediBELL includes a fully working decentralized audit layer that anchors federated learning models to the Ethereum blockchain and stores them on IPFS. This ensures **public verifiability** and **immutable provenance** of all trained models.
+
+After each federated round:
+1. The global aggregated model is saved as a serialized artifact.
+2. The model is uploaded and pinned to **IPFS** (via Pinata API or simulation), returning a unique **Content Identifier (CID)**.
+3. The CID, round number, average accuracy, and timestamp are written to the **MediBellRegistry** smart contract on Ethereum (via Ganache or Sepolia), generating an immutable transaction.
+4. The local audit trail cache (`blockchain/audit_trail.json`) is updated, and can be publicly fetched/verified via the Flask API.
+
+### 1. Environment Configuration (`.env`)
+Create a `.env` file in the project root (using `.env.example` as a template):
+```bash
+# Toggle simulation modes (True/False)
+BLOCKCHAIN_SIMULATION_MODE=False
+IPFS_SIMULATION_MODE=True
+
+# Pinata API credentials (Required for real IPFS pinning)
+PINATA_API_KEY=your_api_key
+PINATA_SECRET_API_KEY=your_secret_key
+
+# Web3 provider URL (Defaults to local Ganache)
+WEB3_PROVIDER_URL=http://127.0.0.1:8545
+
+# Wallet private key (leave empty to auto-use Ganache unlocked account)
+PRIVATE_KEY=
+```
+
+### 2. Deploying the Smart Contract
+You can deploy the registry smart contract locally or to a public testnet:
+- **Local Ganache (recommended for development)**:
+  Make sure Ganache is running (starts automatically on port 8545 when deploying):
+  ```bash
+  .venv/bin/python blockchain/deploy.py
+  ```
+- **Sepolia Testnet**:
+  1. Configure `WEB3_PROVIDER_URL` (e.g. Alchemy RPC) and `PRIVATE_KEY` (funded with Sepolia ETH) in `.env`.
+  2. Run the deployer script:
+     ```bash
+     .venv/bin/python blockchain/deploy.py
+     ```
+  This script compiles the Solidity code, deploys the registry contract, and writes the address to `blockchain/deployed_address.txt`.
+
+### 3. Testing the Integration
+Run a mock integration pipeline that tests IPFS pinning, blockchain round anchoring, and local audit trail caching:
+```bash
+.venv/bin/python blockchain/simulation.py
+```
+
+### 4. Running the Flask Audit API
+Start the local API server:
+```bash
+.venv/bin/python app.py
+```
+You can query the audit logs at:
+- **Prediction endpoint (POST)**: `http://127.0.0.1:5000/predict`
+- **Audit endpoint (GET)**: `http://127.0.0.1:5000/audit`
+
+When `BLOCKCHAIN_SIMULATION_MODE=False` (real blockchain mode), the `/audit` endpoint automatically fetches the CIDs and accuracies from the smart contract on-chain and returns them with a `"on_chain_verified": true` property!
+
+---
+
 ## 🛡 Privacy & Regulatory Compliance
 - **Zero Raw Data Transfer**: Patient records stay on edge nodes; only mathematical weight matrices are shared via FedAvg.
 - **Strict Privacy Bounds**: Epsilon ($\epsilon$) controls the math guarantee of individual privacy, protecting against membership inference attacks and ensuring HIPAA/GDPR compliance.
 - **Synergy Optimization**: MLP captures non-linear features, minimizing accuracy loss under strict privacy budgets.
+

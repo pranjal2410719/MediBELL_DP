@@ -35,6 +35,8 @@ contract MediBellRegistry {
         string memory _cid,
         uint256 _accuracy
     ) public onlyOwner {
+        require(rounds[_round].timestamp == 0, "Round already registered");
+
         rounds[_round] = RoundInfo({
             round: _round,
             cid: _cid,

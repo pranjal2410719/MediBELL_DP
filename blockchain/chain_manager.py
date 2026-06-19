@@ -15,40 +15,13 @@ class ChainManager:
         Returns the transaction hash.
         """
         current_time = int(time.time())
+        tx_hash = None
         
         if self.simulation_mode:
             # 1. Generate fake transaction hash
             tx_data = f"{round_num}-{accuracy}-{cid}-{current_time}"
             tx_hash = "0x" + hashlib.sha256(tx_data.encode()).hexdigest()
             print(f"[CHAIN SIMULATION] Registered Round {round_num} -> Tx Hash: {tx_hash}")
-            
-            # 2. Append to local audit trail json file
-            trail_record = {
-                "round": round_num,
-                "accuracy": round(float(accuracy), 4),
-                "cid": cid,
-                "timestamp": current_time
-            }
-            
-            records = []
-            if os.path.exists(AUDIT_TRAIL_PATH):
-                try:
-                    with open(AUDIT_TRAIL_PATH, "r") as f:
-                        records = json.load(f)
-                        if not isinstance(records, list):
-                            records = []
-                except Exception:
-                    records = []
-            
-            # Append new record
-            records.append(trail_record)
-            
-            # Write back
-            with open(AUDIT_TRAIL_PATH, "w") as f:
-                json.dump(records, f, indent=2)
-                
-            print(f"[CHAIN SIMULATION] Saved to local audit trail: {AUDIT_TRAIL_PATH}")
-            return tx_hash
         else:
             # Real Mode: Connect to Web3 provider and call contract function registerRound
             try:
@@ -105,4 +78,33 @@ class ChainManager:
                 tx_hash = w3.to_hex(tx_hash_bytes)
             
             print(f"[CHAIN] Transaction sent. Tx Hash: {tx_hash}")
-            return tx_hash
+
+        # Append/update record in local audit trail JSON file for caching and indexing
+        trail_record = {
+            "round": round_num,
+            "accuracy": round(float(accuracy), 4),
+            "cid": cid,
+            "tx_hash": tx_hash,
+            "timestamp": current_time
+        }
+        
+        records = []
+        if os.path.exists(AUDIT_TRAIL_PATH):
+            try:
+                with open(AUDIT_TRAIL_PATH, "r") as f:
+                    records = json.load(f)
+                    if not isinstance(records, list):
+                        records = []
+            except Exception:
+                records = []
+        
+        # Deduplicate records: remove existing record for this round if present
+        records = [r for r in records if r.get("round") != round_num]
+        records.append(trail_record)
+        
+        with open(AUDIT_TRAIL_PATH, "w") as f:
+            json.dump(records, f, indent=2)
+            
+        print(f"[CHAIN] Saved round {round_num} to local audit trail: {AUDIT_TRAIL_PATH}")
+        return tx_hash
+

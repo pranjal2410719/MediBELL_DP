@@ -1,9 +1,14 @@
 # blockchain/config.py
 import os
+from dotenv import load_dotenv
+
+# Load .env file from project root
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(project_root, ".env"))
 
 # Toggles between fake services and actual endpoints
-BLOCKCHAIN_SIMULATION_MODE = False
-IPFS_SIMULATION_MODE = True
+BLOCKCHAIN_SIMULATION_MODE = os.getenv("BLOCKCHAIN_SIMULATION_MODE", "False").lower() in ("true", "1")
+IPFS_SIMULATION_MODE = os.getenv("IPFS_SIMULATION_MODE", "True").lower() in ("true", "1")
 
 # IPFS Pinata Configuration (Placeholder for Real Mode)
 PINATA_API_KEY = os.getenv("PINATA_API_KEY", "your_pinata_api_key")
