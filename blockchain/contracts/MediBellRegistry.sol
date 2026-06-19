@@ -1,4 +1,11 @@
 // SPDX-License-Identifier: MIT
+// ==============================================================================
+// Author: Pranjal Yadav
+// Email: 2k24.cs1l.2410719@gmail.com
+// Phone: +91919920362
+// GitHub: https://github.com/pranjal2410719
+// LinkedIn: https://www.linkedin.com/in/-pranjal22/
+// ==============================================================================
 pragma solidity ^0.8.0;
 
 contract MediBellRegistry {
