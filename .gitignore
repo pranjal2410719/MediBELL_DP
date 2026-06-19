@@ -26,3 +26,6 @@ federated/
 # Local blockchain artifacts
 blockchain/deployed_address.txt
 blockchain/audit_trail.json
+
+# MCP Server Context Metadata
+.project-context.json
